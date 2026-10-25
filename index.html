@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Soul Gem Diary - Premium Edition V7</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        :root {
+            --text-color: #f0f0f0;
+            --gold-bright: #fcf6ba;
+            --gold-base: #d4af37;
+            --gold-dark: #8a6a1c;
+            --gem-light: #d9ffd9;
+            --gem-base: #55ff55;
+            --gem-core: #11aa11;
+        }
+        
+        body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif; color: var(--text-color); margin: 0; padding: 15px; transition: background 1.5s ease; min-height: 100vh; background-attachment: fixed; }
+        
+        /* 4段階の背景環境設定 */
+        /* 0〜20%：メルヘン（明るめな魔法空間） */
+        body.bg-fairy { background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%); }
+        /* 30〜40%：通常（これまでのダークリッチブラック） */
+        body.bg-normal { background: radial-gradient(circle at 50% 10%, #1a2a22 0%, #050a0f 100%); }
+        /* 50〜70%：不穏（暗く濁った空気） */
+        body.bg-unsettling { background: radial-gradient(circle at 50% 10%, #2b0f1a 0%, #0a0208 100%); }
+        /* 80〜100%：危険（脈打つ暗黒） */
+        body.bg-danger { background: radial-gradient(circle at center, #4a0000 0%, #000000 100%); animation: pulse-bg 2s infinite alternate; }
+        
+        @keyframes pulse-bg { 0% { background: radial-gradient(circle at center, #3a0000 0%, #000000 100%); } 100% { background: radial-gradient(circle at center, #6a0000 0%, #110000 100%); } }
+        
+        .container { width: 100%; max-width: 600px; margin: 0 auto; box-sizing: border-box; }
+        
+        .view-section { display: none; animation: fadeIn 0.4s ease; }
+        .view-active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .danger-alert { display: none; background: rgba(200, 0, 0, 0.7); backdrop-filter: blur(10px); color: #fff; text-align: center; padding: 12px; font-weight: bold; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ff4d4d; box-shadow: 0 4px 15px rgba(255,0,0,0.4); animation: flash 1s infinite; letter-spacing: 1px; }
+        @keyframes flash { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        
+        .top-nav { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+        .nav-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(212,175,55,0.4); color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
+        .soul-gem-container { display: flex; justify-content: center; align-items: center; flex-direction: column; margin-bottom: 25px; padding: 10px; position: relative; }
+        .gem-core { animation: float 4s ease-in-out infinite; filter: drop-shadow(0px 15px 25px rgba(85, 255, 85, 0.3)); }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
+
+        .status-text { margin-top: 15px; font-weight: bold; font-size: 1.2rem; letter-spacing: 3px; color: var(--gold-bright); text-shadow: 0 2px 10px rgba(212, 175, 55, 0.5); }
+        
+        /* bg-fairy などの明るい背景でもカードが読みやすいよう、すりガラスの黒みとぼかしを調整 */
+        .card { background: rgba(15, 20, 30, 0.55); padding: 20px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(212, 175, 55, 0.2); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); }
+        
+        h2 { margin-top: 0; font-size: 1.1rem; font-weight: 300; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 10px; color: var(--gold-bright); letter-spacing: 1px; }
+        
+        textarea, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; box-sizing: border-box; background: rgba(0,0,0,0.4); color: #fff; font-size: 16px; font-family: inherit; }
+        textarea:focus, input:focus { outline: none; border-color: var(--gold-base); background: rgba(0,0,0,0.6); }
+        
+        .btn-group { display: flex; gap: 12px; margin-top: 5px; }
+        button { flex: 1; padding: 14px; border: none; border-radius: 8px; color: white; font-weight: bold; font-size: 14px; cursor: pointer; transition: all 0.3s ease; letter-spacing: 1px; }
+        
+        .btn-pos { background: linear-gradient(135deg, #1f4037 0%, #99f2c8 100%); color: #000; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-neg { background: linear-gradient(135deg, #2c3e50 0%, #000000 100%); border: 1px solid #555; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .btn-view-records { background: rgba(255,255,255,0.05); border: 1px solid var(--gold-base); color: var(--gold-bright); width: 100%; font-size: 15px; }
+        
+        .point-title { font-size: 0.9rem; color: #ccc; text-align: center; margin-bottom: -10px; letter-spacing: 1px; }
+        .point-display { font-size: 2.8rem; font-weight: bold; color: var(--gold-bright); text-align: center; margin: 15px 0; font-family: "Georgia", serif; text-shadow: 0 0 20px rgba(212,175,55,0.5); }
+        
+        .diary-day-group { margin-bottom: 25px; }
+        .diary-date-header { font-size: 1.1rem; color: var(--gold-bright); border-bottom: 1px solid rgba(212,175,55,0.5); padding-bottom: 5px; margin-bottom: 15px; font-weight: 300; display: flex; justify-content: space-between; align-items: flex-end; }
+        .diary-stats { font-size: 0.8rem; color: #aaa; }
+        
+        .log-entry { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 4px solid #555; font-size: 0.95rem; line-height: 1.5; font-weight: 300; }
+        .log-entry.negative { border-left-color: #ff4d4d; }
+        .log-entry.positive { border-left-color: #55ff55; }
+        .log-entry.converted { border-left-color: #00e5ff; }
+        
+        .purify-btn { width: 100%; margin-top: 10px; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid var(--gold-base); color: var(--gold-bright); border-radius: 6px; font-size: 13px; font-weight: normal; }
+    </style>
+</head>
+<body class="bg-normal" id="app-body">
+<div class="container">
+
+    <!-- ＝＝＝【ダッシュボード画面】＝＝＝ -->
+    <div id="view-dashboard" class="view-section view-active">
+        
+        <div class="top-nav">
+            <button class="nav-btn" onclick="switchView('settings')">⚙️ 設定・詳細</button>
+        </div>
+
+        <div class="danger-alert" id="danger-alert">⚠️ 限界値到達：速やかに負債を浄化してください</div>
+        
+        <div class="soul-gem-container">
+            <svg viewBox="0 0 200 280" width="180" height="252" class="gem-core">
+                <defs>
+                    <linearGradient id="crystal-gem" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="20%" stop-color="#99ff99" />
+                        <stop offset="40%" stop-color="#2eb82e" />
+                        <stop offset="70%" stop-color="#006600" />
+                        <stop offset="100%" stop-color="#001a00" />
+                    </linearGradient>
+                    <linearGradient id="premium-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#a67c00" />
+                        <stop offset="20%" stop-color="#bf953f" />
+                        <stop offset="50%" stop-color="#fcf6ba" />
+                        <stop offset="80%" stop-color="#b38728" />
+                        <stop offset="100%" stop-color="#fdffcc" />
+                    </linearGradient>
+                    <linearGradient id="kegare-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(10,0,10,0.95)" />
+                        <stop offset="100%" stop-color="rgba(0,0,0,1)" />
+                    </linearGradient>
+                    <clipPath id="gem-clip">
+                        <path d="M100,60 C160,60 170,150 140,195 C120,220 80,220 60,195 C30,150 40,60 100,60 Z" />
+                    </clipPath>
+                </defs>
+                <path d="M100,60 C160,60 170,150 140,195 C120,220 80,220 60,195 C30,150 40,60 100,60 Z" fill="url(#crystal-gem)" />
+                <path d="M100,60 L135,110 L100,195 Z" fill="rgba(255,255,255,0.15)" />
+                <path d="M100,60 L65,110 L100,195 Z" fill="rgba(0,0,0,0.15)" />
+                <polygon points="100,70 120,115 100,180 80,115" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+                
+                <g clip-path="url(#gem-clip)">
+                    <rect id="kegare-rect" x="0" y="240" width="200" height="200" fill="url(#kegare-gradient)" />
+                    <ellipse id="kegare-cloud1" cx="100" cy="240" rx="80" ry="30" fill="rgba(0,0,0,0.8)" filter="blur(6px)"/>
+                    <path d="M50,250 Q100,220 150,250" fill="none" stroke="rgba(30,0,30,0.5)" stroke-width="15" filter="blur(4px)" id="kegare-wave"/>
+                </g>
+
+                <path d="M95,65 C120,70 125,100 120,130 L105,120 Z" fill="rgba(255,255,255,0.3)" />
+                <ellipse cx="80" cy="95" rx="8" ry="25" fill="rgba(255,255,255,0.7)" transform="rotate(-35 80 95)" />
+                
+                <path d="M90,62 C95,30 100,10 100,10 C100,10 105,30 110,62 Z" fill="url(#premium-gold)" />
+                <ellipse cx="100" cy="58" rx="22" ry="8" fill="url(#premium-gold)" />
+                <circle cx="100" cy="40" r="6" fill="#80ff80" stroke="url(#premium-gold)" stroke-width="2"/>
+                <circle cx="98" cy="38" r="2" fill="white" />
+
+                <path d="M100,58 Q165,60 170,150 Q175,200 145,200" fill="none" stroke="url(#premium-gold)" stroke-width="5" stroke-linecap="round"/>
+                <path d="M100,58 Q35,60 30,150 Q25,200 55,200" fill="none" stroke="url(#premium-gold)" stroke-width="5" stroke-linecap="round"/>
+                <path d="M38,125 Q100,170 162,125" fill="none" stroke="url(#premium-gold)" stroke-width="2" />
+                <path d="M48,160 Q100,200 152,160" fill="none" stroke="url(#premium-gold)" stroke-width="2" />
+
+                <ellipse cx="100" cy="197" rx="42" ry="12" fill="url(#premium-gold)" />
+                <rect x="65" y="197" width="70" height="15" fill="url(#premium-gold)" />
+                <rect x="60" y="212" width="80" height="6" fill="#5c4500" />
+                <ellipse cx="100" cy="221" rx="46" ry="10" fill="url(#premium-gold)" />
+                <rect x="54" y="221" width="92" height="12" fill="url(#premium-gold)" />
+                <ellipse cx="100" cy="233" rx="55" ry="12" fill="url(#premium-gold)" />
+                <rect x="45" y="233" width="110" height="10" fill="url(#premium-gold)" />
+                <ellipse cx="100" cy="243" rx="60" ry="14" fill="url(#premium-gold)" />
+                <ellipse cx="100" cy="248" rx="55" ry="10" fill="rgba(0,0,0,0.5)" filter="blur(3px)"/>
+            </svg>
+            <div class="status-text" id="status-text">SYSTEM NORMAL</div>
+        </div>
+
+        <div class="card">
+            <h2>感情・事象の記録</h2>
+            <textarea id="entry-text" rows="2" placeholder="事象を言語化してください..."></textarea>
+            <div class="btn-group">
+                <button class="btn-neg" onclick="addEntry('negative')">負債（ネガティブ）</button>
+                <button class="btn-pos" onclick="addEntry('positive')">利益（ポジティブ）</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>リソース管理（資本と投資）</h2>
+            <div class="point-title">保有 幸福POINT</div>
+            <div class="point-display" id="point-display">0 pt</div>
+            <button onclick="dailySettlement()" style="width:100%; background:linear-gradient(135deg, #a67c00, #fcf6ba); color:#000; margin-bottom:15px; letter-spacing:2px; font-size:15px;">日次決算（無借金ボーナス +1pt）</button>
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="wish-text" placeholder="投資目標・報酬">
+                <input type="number" id="wish-cost" placeholder="pt" style="width:70px;">
+                <button onclick="addWish()" style="flex:0 0 70px; background:var(--gold-dark); color:#fff; border:1px solid var(--gold-bright);">設定</button>
+            </div>
+            <div id="wish-list" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>データベース</h2>
+            <button class="btn-view-records" onclick="switchView('diary')">📄 日ごとの記録（台帳）を確認する</button>
+        </div>
+    </div>
+
+    <!-- ＝＝＝【設定・詳細（バックエンド）画面】＝＝＝ -->
+    <div id="view-settings" class="view-section">
+        <div class="card" style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; border: none; padding: 0;">管理者用ダッシュボード（詳細）</h2>
+                <button onclick="switchView('dashboard')" style="background: rgba(0,0,0,0.5); border: 1px solid #888; color: #fff; padding: 8px 15px; width: auto; font-size: 12px;">◀ 戻る</button>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.4); padding: 20px; border-radius: 8px; border-left: 4px solid var(--gold-base); margin-bottom: 20px;">
+                <div style="font-size: 0.9rem; color: #aaa; margin-bottom: 5px;">現在の未解決負債蓄積率（穢れ）</div>
+                <div id="settings-kegare-display" style="font-size: 2.5rem; font-weight: bold; color: #ff4d4d; text-shadow: 0 0 10px rgba(255,77,77,0.3);">0%</div>
+                <div style="font-size: 0.8rem; color: #aaa; margin-top: 10px;">※ネガティブ事象1件につき 10% 蓄積されます。浄化することで解消されます。</div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; font-size: 0.8rem; color: #888;">
+                Soul Gem Management System V7<br>
+                Running smoothly.
+            </div>
+        </div>
+    </div>
+
+    <!-- ＝＝＝【日記・台帳画面】＝＝＝ -->
+    <div id="view-diary" class="view-section">
+        <div class="card" style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; border: none; padding: 0;">運用履歴（台帳）</h2>
+                <button onclick="switchView('dashboard')" style="background: rgba(0,0,0,0.5); border: 1px solid #888; color: #fff; padding: 8px 15px; width: auto; font-size: 12px;">◀ 監視画面へ戻る</button>
+            </div>
+            <div id="diary-list-container"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let entries = JSON.parse(localStorage.getItem('sg_entries_v7')) || [];
+    let wishes = JSON.parse(localStorage.getItem('sg_wishes_v7')) || [];
+    let points = parseInt(localStorage.getItem('sg_points_v7')) || 0;
+
+    function switchView(viewName) {
+        document.getElementById('view-dashboard').classList.remove('view-active');
+        document.getElementById('view-diary').classList.remove('view-active');
+        document.getElementById('view-settings').classList.remove('view-active');
+        
+        if (viewName === 'diary') {
+            document.getElementById('view-diary').classList.add('view-active');
+            renderDiary(); 
+        } else if (viewName === 'settings') {
+            document.getElementById('view-settings').classList.add('view-active');
+        } else {
+            document.getElementById('view-dashboard').classList.add('view-active');
+            updateDashboard(); 
+        }
+        window.scrollTo(0, 0); 
+    }
+
+    function saveData() {
+        localStorage.setItem('sg_entries_v7', JSON.stringify(entries));
+        localStorage.setItem('sg_wishes_v7', JSON.stringify(wishes));
+        localStorage.setItem('sg_points_v7', points);
+    }
+
+    function updateDashboard() {
+        saveData();
+        let unresolvedNegativeCount = 0;
+        entries.forEach(entry => {
+            if (entry.type === 'negative' && !entry.isConverted) unresolvedNegativeCount++;
+        });
+
+        // ネガティブ1件につき10%
+        let kegarePercent = Math.min(unresolvedNegativeCount * 10, 100);
+        
+        // 管理者画面の数値更新
+        document.getElementById('settings-kegare-display').innerText = `${kegarePercent}%`;
+
+        // ソウルジェム内部の穢れ水位アニメーション
+        let kegareY = 240 - (kegarePercent * 1.8);
+        document.getElementById('kegare-rect').setAttribute('y', kegareY);
+        document.getElementById('kegare-cloud1').setAttribute('cy', kegareY + 10);
+        document.getElementById('kegare-wave').setAttribute('d', `M50,${kegareY+20} Q100,${kegareY-10} 150,${kegareY+20}`);
+        
+        const appBody = document.getElementById('app-body');
+        const alertBox = document.getElementById('danger-alert');
+        const statusText = document.getElementById('status-text');
+
+        // ==== 背景環境とステータスの4段階遷移ロジック ====
+        if (kegarePercent >= 80) {
+            // 80%〜：危険状態
+            appBody.className = 'bg-danger';
+            alertBox.style.display = 'block';
+            statusText.innerText = `CRITICAL WARNING`;
+            statusText.style.color = '#ff4d4d'; 
+            statusText.style.textShadow = '0 2px 10px rgba(255,0,0,0.5)';
+        } else if (kegarePercent >= 50) {
+            // 50%〜70%：不穏状態
+            appBody.className = 'bg-unsettling';
+            alertBox.style.display = 'none';
+            statusText.innerText = `SYSTEM WARNING`;
+            statusText.style.color = '#ffaa00'; 
+            statusText.style.textShadow = '0 2px 10px rgba(255,170,0,0.5)';
+        } else if (kegarePercent >= 30) {
+            // 30%〜40%：通常状態
+            appBody.className = 'bg-normal';
+            alertBox.style.display = 'none';
+            statusText.innerText = `SYSTEM NORMAL`;
+            statusText.style.color = 'var(--gold-bright)'; 
+            statusText.style.textShadow = '0 2px 10px rgba(212,175,55,0.5)';
+        } else {
+            // 0%〜20%：メルヘン・クリア状態
+            appBody.className = 'bg-fairy';
+            alertBox.style.display = 'none';
+            statusText.innerText = `SYSTEM CLEAR`;
+            statusText.style.color = '#ffffff'; 
+            statusText.style.textShadow = '0 0 15px rgba(255,255,255,0.8), 0 0 5px var(--gold-bright)';
+        }
+
+        document.getElementById('point-display').innerText = `${points} pt`;
+        
+        const wishList = document.getElementById('wish-list');
+        wishList.innerHTML = '';
+        wishes.forEach((wish, index) => {
+            const div = document.createElement('div');
+            div.style.cssText = 'display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.1); padding:12px; margin-bottom:8px; border-radius:6px; font-weight:300;';
+            div.innerHTML = `<span>${wish.text} <span style="color:var(--gold-base); font-weight:bold;">[${wish.cost}pt]</span></span>
+                <button onclick="fulfillWish(${index})" ${points < wish.cost ? 'disabled style="background:rgba(255,255,255,0.1); color:#555;"' : 'style="background:linear-gradient(135deg, #d4af37, #fcf6ba); color:#000;"'}>投資実行</button>`;
+            wishList.appendChild(div);
+        });
+    }
+
+    function renderDiary() {
+        const container = document.getElementById('diary-list-container');
+        container.innerHTML = '';
+        
+        if (entries.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#888; padding:20px;">記録がありません</div>';
+            return;
+        }
+
+        const grouped = {};
+        entries.forEach((entry, index) => {
+            const dateStr = entry.date.split(' ')[0]; 
+            if (!grouped[dateStr]) grouped[dateStr] = [];
+            grouped[dateStr].push({ ...entry, originalIndex: index });
+        });
+
+        const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+
+        sortedDates.forEach(date => {
+            let posCount = 0; let negCount = 0; let convCount = 0;
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'diary-day-group';
+            
+            const entriesHtml = grouped[date].slice().reverse().map(item => {
+                if (item.type === 'positive') posCount++;
+                if (item.type === 'negative' && !item.isConverted) negCount++;
+                if (item.isConverted) convCount++;
+
+                let html = `<div class="log-entry ${item.isConverted ? 'converted' : item.type}">`;
+                html += `<div style="font-size:0.75rem; color:#ccc; margin-bottom:5px;">${item.date.split(' ')[1] || item.date} <span style="float:right; border:1px solid; border-radius:3px; padding:2px 5px;">${item.isConverted ? '浄化済' : item.type.toUpperCase()}</span></div>`;
+                html += `<div>${item.text}</div>`;
+                
+                if (item.type === 'negative' && !item.isConverted) {
+                    html += `
+                        <button class="purify-btn" onclick="document.getElementById('cf-${item.originalIndex}').style.display='block'">◆ 負債を資本へ転換（浄化）</button>
+                        <div style="display:none; margin-top:10px;" id="cf-${item.originalIndex}">
+                            <textarea id="ct-${item.originalIndex}" rows="2" placeholder="どのように捉え直し、解決しましたか？"></textarea>
+                            <button onclick="convertEntry(${item.originalIndex}, true)" style="background:var(--gold-base); color:#000; width:100%;">実行</button>
+                        </div>`;
+                }
+                if (item.isConverted) {
+                    html += `<div style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.4); border-left:2px solid var(--gold-base); color:#ddd;">${item.convertedText}</div>`;
+                }
+                html += `</div>`;
+                return html;
+            }).join('');
+
+            const headerHtml = `
+                <div class="diary-date-header">
+                    <span>📅 ${date}</span>
+                    <span class="diary-stats">利益: ${posCount + convCount} / 負債: ${negCount}</span>
+                </div>
+            `;
+            groupDiv.innerHTML = headerHtml + entriesHtml;
+            container.appendChild(groupDiv);
+        });
+    }
+
+    function addEntry(type) {
+        const text = document.getElementById('entry-text').value;
+        if (!text) return;
+        
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = ('0' + (now.getMonth() + 1)).slice(-2);
+        const d = ('0' + now.getDate()).slice(-2);
+        const time = now.toLocaleTimeString('ja-JP');
+        const formattedDate = `${y}/${m}/${d} ${time}`;
+
+        entries.push({ date: formattedDate, text: text, type: type, isConverted: false, convertedText: '' });
+        document.getElementById('entry-text').value = '';
+        
+        if (type === 'positive') {
+            points += 1;
+            alert("【利益計上】\nポジティブな事象が記録されました。幸福POINTを +1 獲得しました！");
+        }
+
+        updateDashboard();
+    }
+
+    function convertEntry(index, fromDiary = false) {
+        const text = document.getElementById(`ct-${index}`).value;
+        if (!text) return;
+        entries[index].isConverted = true;
+        entries[index].convertedText = text;
+        saveData();
+        
+        if (fromDiary) {
+            renderDiary(); 
+            updateDashboard();
+        } else {
+            updateDashboard();
+        }
+    }
+
+    function dailySettlement() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = ('0' + (now.getMonth() + 1)).slice(-2);
+        const d = ('0' + now.getDate()).slice(-2);
+        const todayStr = `${y}/${m}/${d}`;
+
+        let todayNegative = 0;
+        entries.forEach(entry => {
+            if (entry.date.startsWith(todayStr)) {
+                if (entry.type === 'negative' && !entry.isConverted) todayNegative++;
+            }
+        });
+        
+        if (todayNegative === 0) { 
+            points += 1; 
+            alert("【日次決算報告】\n本日の未解決負債ゼロを確認。\n無借金経営の特別ボーナスとして 1pt を追加計上しました。"); 
+        } else { 
+            alert(`【警告】\n未解決の負債（ネガティブ）が ${todayNegative} 件残存しています。ボーナス配当は見送られました。`); 
+        }
+        updateDashboard();
+    }
+
+    function addWish() {
+        const text = document.getElementById('wish-text').value;
+        const cost = parseInt(document.getElementById('wish-cost').value);
+        if (!text || isNaN(cost) || cost <= 0) return;
+        wishes.push({ text, cost });
+        document.getElementById('wish-text').value = ''; document.getElementById('wish-cost').value = '';
+        updateDashboard();
+    }
+
+    function fulfillWish(index) {
+        if (points >= wishes[index].cost) {
+            points -= wishes[index].cost;
+            alert(`【投資実行】\n「${wishes[index].text}」に資本を投下しました。`);
+            wishes.splice(index, 1);
+            updateDashboard();
+        }
+    }
+
+    updateDashboard();
+</script>
+</body>
+</html>
